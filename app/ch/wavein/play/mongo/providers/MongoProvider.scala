@@ -2,6 +2,7 @@ package ch.wavein.play.mongo.providers
 
 import ch.wavein.play.mongo.model.Identity
 import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
+import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
 import play.modules.reactivemongo.json._
@@ -13,7 +14,11 @@ import scala.concurrent.{ExecutionContext, Future}
   * Created by mattia on 28/06/16.
   */
 trait MongoProvider[T <: Identity] extends Provider[T] {
-  def collection: Future[JSONCollection]
+
+  def collectionName:String
+  def reactiveMongoApi:ReactiveMongoApi
+
+  def collection: Future[JSONCollection] = reactiveMongoApi.database.map(_.collection[JSONCollection](collectionName))
 
   implicit def formatter: OFormat[T]
 

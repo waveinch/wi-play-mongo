@@ -1,7 +1,6 @@
 package ch.wavein.play.mongo.providers
 
 import ch.wavein.play.mongo.model.Identity
-import shapeless.{HList, RecordArgs}
 
 import scala.concurrent.Future
 import scala.util.Random
