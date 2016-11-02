@@ -11,8 +11,8 @@ pomExtra in Global := {
       </license>
     </licenses>
     <scm>
-      <connection>scm:git:github.com/waveinch/wi-play-mongo</connection>
-      <developerConnection>scm:git:git@github.com/waveinch/wi-play-mongo</developerConnection>
+      <connection>scm:git:github.com/waveinch/wi-play-mongo.git</connection>
+      <developerConnection>scm:git:git@github.com/waveinch/wi-play-mongo.git</developerConnection>
       <url>https://github.com/waveinch/play-mustache</url>
     </scm>
     <developers>
