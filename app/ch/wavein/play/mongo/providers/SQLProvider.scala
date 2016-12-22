@@ -17,7 +17,7 @@ trait SQLProvider[M <: Identity] extends Provider[M] {
 
   import entryPoint._
 
-  implicit def ex:ExecutionContext
+  implicit def ec:ExecutionContext
 
   implicit def key:KeyedEntityDef[M, String] = new KeyedEntityDef[M,String] {
     override def getId(a: M): String = a._id.getOrElse("no id yet")
@@ -38,7 +38,10 @@ trait SQLProvider[M <: Identity] extends Provider[M] {
   }
 
   override def insert(obj: M): Future[M] = exec{ () =>
-      val newObj = setId(obj)
+      val newObj = obj._id match {
+        case None => setId(obj)
+        case Some(_) => obj
+      }
       table.insert(newObj)
   }
 
@@ -55,7 +58,7 @@ trait SQLProvider[M <: Identity] extends Provider[M] {
 
   override def findMany(ids: Seq[String], ordered: Boolean): Future[Seq[M]] = exec{ () =>
       from(table) { s =>
-        where(s.identity in ids) select(s)
+        where(s._id in ids) select(s)
       }.toList
   }
 
@@ -88,8 +91,8 @@ trait SQLProvider[M <: Identity] extends Provider[M] {
 
   override def listIds(): Future[Seq[String]] = exec{ () =>
       from(table) { s =>
-        select(s.identity)
-      }.toList
+        select(s._id)
+      }.toList.flatten
   }
 
   override def exists(id: String): Future[Boolean] = exec{ () =>

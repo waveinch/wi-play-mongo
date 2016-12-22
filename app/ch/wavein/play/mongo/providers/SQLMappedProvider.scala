@@ -9,7 +9,7 @@ import scala.concurrent.{ExecutionContext, Future}
   */
 trait SQLMappedProvider[M <: Identity,T <: Identity] extends Provider[M]  {
 
-  implicit def ex:ExecutionContext
+  implicit def ec:ExecutionContext
 
   def sqlProvider:SQLProvider[T]
 

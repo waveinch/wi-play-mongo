@@ -2,6 +2,7 @@ package ch.wavein.play.mongo.sql
 
 import javax.inject.{Inject, Singleton}
 
+import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import org.squeryl.Session
 import org.squeryl.adapters.MySQLAdapter
 import play.api.Configuration
@@ -20,11 +21,19 @@ class MySQLFactorySingleton @Inject()(configuration: Configuration) extends MySQ
 
   start()
 
+  val config = new HikariConfig();
+  config.setJdbcUrl(configuration.getString("db.default.url").get);
+  config.addDataSourceProperty("maximumPoolSize",configuration.getInt("db.default.maximumPoolSize").getOrElse(2));
+
+  val ds = new HikariDataSource(config);
+
+
   def start() = {
     Class.forName("com.mysql.jdbc.Driver");
-    SessionFactory.concreteFactory = Some(() =>
+    SessionFactory.concreteFactory = Some { () =>
       Session.create(
-        java.sql.DriverManager.getConnection(configuration.getString("db.default.url").get),
-        new MySQLAdapter))
+        ds.getConnection,
+        new MySQLAdapter)
+    }
   }
 }

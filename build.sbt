@@ -2,7 +2,7 @@ name := """wi-play-mongo"""
 
 organization := "ch.wavein"
 
-version := "1.2-SNAPSHOT"
+version := "1.4-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 
@@ -14,6 +14,7 @@ libraryDependencies ++= Seq(
   "org.reactivemongo" %% "reactivemongo" % "0.11.14",
   "org.reactivemongo" %% "play2-reactivemongo" % "0.11.14",
   "org.squeryl" % "squeryl_2.11" % "0.9.7",
-  "mysql" % "mysql-connector-java" % "5.1.10"
+  "mysql" % "mysql-connector-java" % "5.1.10",
+  "com.zaxxer" % "HikariCP" % "2.5.1"
 )
 
