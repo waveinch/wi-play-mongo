@@ -15,7 +15,7 @@ trait MockProvider[T <: Identity] extends Provider[T] {
 
   def addId(obj:T):T
 
-  override def insert(obj: T): Future[T] = Future.successful {
+  override def insert(obj: T, autoGenerateId:Boolean = true): Future[T] = Future.successful {
 
     val result = addId(obj)
 

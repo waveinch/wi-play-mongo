@@ -37,7 +37,7 @@ trait SQLProvider[M <: Identity] extends Provider[M] {
     }
   }
 
-  override def insert(obj: M): Future[M] = exec{ () =>
+  override def insert(obj: M, autoGenerateId:Boolean = true): Future[M] = exec{ () =>
       val newObj = obj._id match {
         case None => setId(obj)
         case Some(_) => obj

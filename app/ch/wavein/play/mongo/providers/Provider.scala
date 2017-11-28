@@ -14,7 +14,7 @@ class ObjectNotExistsException(val id: String) extends Exception(s"Object $id no
 class CantUpdateObject(val id: String) extends Exception("Can't update (or find) obj -> " + id)
 
 trait Provider[T <: Identity] {
-  def insert(obj: T): Future[T]
+  def insert(obj: T, autoGenerateId:Boolean = true): Future[T]
 
   /**
     * Warinig NOT thread safe!

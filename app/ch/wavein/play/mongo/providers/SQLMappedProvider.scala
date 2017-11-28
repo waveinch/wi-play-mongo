@@ -18,7 +18,7 @@ trait SQLMappedProvider[M <: Identity,T <: Identity] extends Provider[M]  {
 
   def sql(m: M)(f:(T => Future[T])) = f(toSQL(m)).map(fromSQL)
 
-  override def insert(obj: M): Future[M] = sql(obj) { t =>
+  override def insert(obj: M, autoGenerateId:Boolean = true): Future[M] = sql(obj) { t =>
     sqlProvider.insert(t)
   }
 

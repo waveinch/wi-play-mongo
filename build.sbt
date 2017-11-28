@@ -2,7 +2,7 @@ name := """wi-play-mongo"""
 
 organization := "ch.wavein"
 
-version := "1.4-SNAPSHOT"
+version := "1.5-SNAPSHOT"
 
 lazy val root = (project in file(".")).enablePlugins(PlayScala)
 

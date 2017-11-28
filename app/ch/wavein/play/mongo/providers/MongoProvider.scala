@@ -26,15 +26,25 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
 
   protected def createUniqueId(obj: T): String = BSONObjectID.generate.stringify
 
-  override def insert(obj: T): Future[T] = {
+  override def insert(obj: T, autoGenerateId:Boolean = true): Future[T] = {
 
-    val newId = createUniqueId(obj)
-    val jsonWithNewId = Json.toJson(obj).as[JsObject] ++ Json.obj("_id" -> newId)
+
+    val id =  autoGenerateId match {
+      case true => createUniqueId(obj)
+      case false => obj.identity
+    }
+
+    val jsonToInsert = autoGenerateId match {
+      case true => {
+        Json.toJson(obj).as[JsObject] ++ Json.obj("_id" -> id)
+      }
+      case false => Json.toJson(obj).as[JsObject]
+    }
 
     for {
       coll <- collection
-      _ <- coll.insert(jsonWithNewId)
-      obj <- get(newId)
+      _ <- coll.insert(jsonToInsert)
+      obj <- get(id)
     } yield obj
   }
 
