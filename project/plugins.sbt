@@ -1,5 +1,5 @@
 // The Play plugin
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.5.9")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.17")
 
 addSbtPlugin("org.xerial.sbt" % "sbt-sonatype" % "1.1")
 

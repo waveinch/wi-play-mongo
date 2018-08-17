@@ -13,6 +13,9 @@ import scala.concurrent.ExecutionContext
   */
 object ExistenceFilter {
   def apply[B <: Identity, T[A] <: Request[A]](id: String, provider: Provider[B])(implicit ec: ExecutionContext) = new ActionFilter[T] {
+
+    override protected def executionContext: ExecutionContext = ec
+
     override protected def filter[A](request: T[A]) = for {
       exist <- provider.exists(id)
     } yield if (exist) None else Some(BadRequest(Json.obj("Result" -> "Item not exists")))

@@ -1,20 +1,20 @@
 package ch.wavein.play.mongo.components
 
-import ch.wavein.play.mongo.SecureUpdateAction
+import ch.wavein.play.mongo.{SecureUpdateController}
 import ch.wavein.play.mongo.actions.ExistenceFilter
 import ch.wavein.play.mongo.model.Identity
 import ch.wavein.play.mongo.providers.Provider
 import play.api.libs.json.{Json, OFormat}
 import play.api.mvc.BodyParsers.parse
-import play.api.mvc.{ActionBuilder, Controller, Request}
+import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
 
 /**
   * Created by unoedx on 21/10/16.
   */
-trait CrudActions[T <: Identity] extends Controller {
-  def crudActionBuilder: ActionBuilder[Request]
+trait CrudActions[T <: Identity] extends SecureUpdateController { self:BaseController =>
+  def crudActionBuilder: DefaultActionBuilder
 
   implicit def crudFormatter: OFormat[T]
 
@@ -35,7 +35,7 @@ trait CrudActions[T <: Identity] extends Controller {
     } yield Ok(Json.toJson(sub))
   }
 
-  def update(id: String) = SecureUpdateAction(id) {
+  def update(id: String) = secureUpdateAction(id) {
     (crudActionBuilder andThen ExistenceFilter(id, modelProvider)).async(parse.json[T]) { implicit request =>
       val sub = request.body
 
