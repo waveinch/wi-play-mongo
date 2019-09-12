@@ -2,7 +2,7 @@ package ch.wavein.play.mongo.providers
 
 import ch.wavein.play.mongo.model.{Identity, Slug}
 import play.api.libs.json.Json
-import play.modules.reactivemongo.json._
+import reactivemongo.play.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 

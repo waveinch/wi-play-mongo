@@ -5,10 +5,10 @@ import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.bson.BSONObjectID
 import reactivemongo.play.json.collection.JSONCollection
-import play.modules.reactivemongo.json._
+import reactivemongo.play.json._
 
-import scala.collection._
 import scala.concurrent.{ExecutionContext, Future}
+import reactivemongo.api.Cursor
 
 /**
   * Created by mattia on 28/06/16.
@@ -43,7 +43,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
 
     for {
       coll <- collection
-      _ <- coll.insert(jsonToInsert)
+      _ <- coll.insert(ordered = false).one(jsonToInsert)
       obj <- get(id)
     } yield obj
   }
@@ -66,10 +66,10 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
     coll <- collection
     unorderedList <- coll.find(
       Json.obj("_id" -> Json.obj("$in" -> ids))
-    ).cursor[T]().collect[Seq]()
+    ).cursor[T]().collect[Seq](Int.MaxValue, Cursor.FailOnError[Seq[T]]())
   } yield ordered match {
     case true =>
-      val hashMap: Map[String, T] = unorderedList.map(o => o.identity -> o)(breakOut)
+      val hashMap: Map[String, T] = unorderedList.map(o => o.identity -> o).toMap
       ids.flatMap(hashMap.get)
     case false => unorderedList
   }
@@ -77,14 +77,14 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
   override def update(obj: T): Future[T] = for {
     coll <- collection
     _ <- checkExistence(obj.identity)
-    _ <- coll.update(Json.obj("_id" -> obj._id), obj)
+    _ <- coll.update(ordered = false).one(Json.obj("_id" -> obj._id), obj)
     updatedObj <- get(obj.identity)
   } yield updatedObj
 
   override def softUpdate(obj: T): Future[T] = for {
     coll <- collection
     _ <- checkExistence(obj.identity)
-    _ <- coll.update(
+    _ <- coll.update(ordered = false).one(
       Json.obj("_id" -> obj._id),
       Json.obj("$set" -> obj))
     updatedObj <- get(obj.identity)
@@ -93,7 +93,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
   override def delete(id: String): Future[T] = for {
     coll <- collection
     obj <- get(id)
-    _ <- coll.remove(Json.obj("_id" -> id))
+    _ <- coll.delete().one(Json.obj("_id" -> id))
   } yield obj
 
   override def exists(id: String): Future[Boolean] = for {
@@ -118,27 +118,27 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
 
     for {
       coll <- collection
-      allObjects <- coll.find(Json.obj()).sort(mongoOrder).cursor[T]().collect[Seq](limit)
+      allObjects <- coll.find(Json.obj()).sort(mongoOrder).cursor[T]().collect[Seq](limit,Cursor.FailOnError[Seq[T]]())
     } yield allObjects
   }
 
   def listIds(): Future[Seq[String]] = for {
     coll <- collection
     ids <- coll.find(Json.obj(), Json.obj("_id" -> true))
-      .cursor[JsObject]().collect[Seq]()
+      .cursor[JsObject]().collect[Seq](Int.MaxValue,Cursor.FailOnError[Seq[JsObject]]())
       .map(_.flatMap({ j => (j \ "_id").validate[String].asOpt }))
   } yield ids
 
   def rawUpdate(id: String, jsUpdate: JsObject): Future[T] = for {
     coll <- collection
     _ <- checkExistence(id)
-    _ <- coll.update(Json.obj("_id" -> id), jsUpdate)
+    _ <- coll.update(ordered = false).one(Json.obj("_id" -> id),jsUpdate)
     updatedObj <- get(id)
   } yield updatedObj
 
   protected def list(query: JsObject): Future[Seq[T]] = for {
     coll <- collection
-    allObjects <- coll.find(query).cursor[T]().collect[Seq]()
+    allObjects <- coll.find(query).cursor[T]().collect[Seq](Int.MaxValue,Cursor.FailOnError[Seq[T]]())
   } yield allObjects
 
   protected def checkExistence(id: String): Future[Boolean] = for {

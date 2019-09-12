@@ -1,14 +1,14 @@
 package ch.wavein.play.mongo.modules
 
-import ch.wavein.play.mongo.sql.{MySQLFactory, MySQLFactorySingleton}
 import com.google.inject.AbstractModule
-import net.codingwell.scalaguice.ScalaModule
+
+import ch.wavein.play.mongo.sql.{MySQLFactory, MySQLFactorySingleton}
 
 /**
   * Created by unoedx on 02/11/16.
   */
-class MySQLModule extends AbstractModule with ScalaModule {
+class MySQLModule extends AbstractModule {
   override def configure(): Unit = {
-    bind[MySQLFactory].to[MySQLFactorySingleton].asEagerSingleton()
+    bind(classOf[MySQLFactory]).to(classOf[MySQLFactorySingleton]).asEagerSingleton()
   }
 }

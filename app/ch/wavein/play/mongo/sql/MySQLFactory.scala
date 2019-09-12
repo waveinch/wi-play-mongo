@@ -22,8 +22,8 @@ class MySQLFactorySingleton @Inject()(configuration: Configuration) extends MySQ
   start()
 
   val config = new HikariConfig();
-  config.setJdbcUrl(configuration.getString("db.default.url").get);
-  config.addDataSourceProperty("maximumPoolSize",configuration.getInt("db.default.maximumPoolSize").getOrElse(2));
+  config.setJdbcUrl(configuration.get[String]("db.default.url"));
+  config.addDataSourceProperty("maximumPoolSize",configuration.get[Int]("db.default.maximumPoolSize"));
 
   val ds = new HikariDataSource(config);
 
