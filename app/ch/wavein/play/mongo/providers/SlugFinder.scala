@@ -2,10 +2,9 @@ package ch.wavein.play.mongo.providers
 
 import ch.wavein.play.mongo.model.{Identity, Slug}
 import play.api.libs.json.Json
-import reactivemongo.play.json._
 
 import scala.concurrent.{ExecutionContext, Future}
-
+import ch.wavein.play.mongo.json.BsonFormatter._
 
 /**
   * Created by unoedx on 13/09/16.

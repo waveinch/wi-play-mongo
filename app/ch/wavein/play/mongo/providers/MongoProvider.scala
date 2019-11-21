@@ -2,25 +2,26 @@ package ch.wavein.play.mongo.providers
 
 import ch.wavein.play.mongo.model.Identity
 import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
-import play.modules.reactivemongo.ReactiveMongoApi
 import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.collection.JSONCollection
-import reactivemongo.play.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 import reactivemongo.api.Cursor
+import reactivemongo.api.bson.collection.BSONCollection
+import ch.wavein.play.mongo.json.BsonFormatter._
+import reactivemongo.api.bson.{BSONDocument, BSONDocumentReader, BSONDocumentWriter}
 
 /**
   * Created by mattia on 28/06/16.
   */
 trait MongoProvider[T <: Identity] extends Provider[T] {
 
-  def collectionName:String
-  def reactiveMongoApi:ReactiveMongoApi
 
-  def collection: Future[JSONCollection] = reactiveMongoApi.database.map(_.collection[JSONCollection](collectionName))
+
+  def collection: Future[BSONCollection]
 
   implicit def formatter: OFormat[T]
+  implicit def bsonRead: BSONDocumentReader[T]
+  implicit def bsonWrite: BSONDocumentWriter[T]
 
   implicit def ec: ExecutionContext
 
@@ -101,7 +102,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
     obj <- coll.find(
       Json.obj("_id" -> id),
       Json.obj("_id" -> 1)
-    ).one[JsValue].map(_.isDefined)
+    ).one[BSONDocument].map(_.isDefined)
   } yield obj
 
   override def list(): Future[Seq[T]] =
