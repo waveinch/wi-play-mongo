@@ -27,5 +27,3 @@ libraryDependencies ++= Seq(
   "mysql" % "mysql-connector-java" % "5.1.10",
   "com.zaxxer" % "HikariCP" % "2.5.1"
 )
-
-publishTo := sonatypePublishTo.value
