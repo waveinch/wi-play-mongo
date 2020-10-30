@@ -1,11 +1,22 @@
+import com.typesafe.sbt.GitVersioning
+
 name := """wi-play-mongo"""
 
 organization := "ch.wavein"
 
-version := "1.7.1"
 isSnapshot := false
 
-lazy val root = (project in file(".")).enablePlugins(PlayScala)
+lazy val root = (project in file("."))
+  .settings(
+    bintrayRepository := "maven",
+    bintrayOrganization := Some("waveinch"),
+    publishMavenStyle := true,
+    licenses += ("Apache-2.0", url("http://www.opensource.org/licenses/apache2.0.php")),
+    git.useGitDescribe := true
+  ).enablePlugins(
+  PlayScala,
+  GitVersioning
+)
 
 scalaVersion := "2.13.0"
 
