@@ -22,7 +22,7 @@ scalaVersion := "2.13.3"
 
 libraryDependencies ++= Seq(
   guice,
-  "org.reactivemongo" %% "play2-reactivemongo" % "0.18.1-play27",
+  "org.reactivemongo" %% "play2-reactivemongo" % "1.0.0-play27",
   "org.squeryl" % "squeryl_2.13" % "0.9.14",
   "mysql" % "mysql-connector-java" % "5.1.10",
   "com.zaxxer" % "HikariCP" % "2.5.1"

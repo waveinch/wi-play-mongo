@@ -3,12 +3,17 @@ package ch.wavein.play.mongo.providers
 import ch.wavein.play.mongo.model.Identity
 import play.api.libs.json.{JsObject, JsValue, Json, OFormat}
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.bson.BSONObjectID
-import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json._
 
 import scala.concurrent.{ExecutionContext, Future}
 import reactivemongo.api.Cursor
+import reactivemongo.api.bson.BSONObjectID
+import reactivemongo.api.bson.collection.BSONCollection
+
+// BSON-JSON conversions/collection
+import reactivemongo.play.json.compat._,
+json2bson.{ toDocumentReader, toDocumentWriter }
+
 
 /**
   * Created by mattia on 28/06/16.
@@ -18,7 +23,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
   def collectionName:String
   def reactiveMongoApi:ReactiveMongoApi
 
-  def collection: Future[JSONCollection] = reactiveMongoApi.database.map(_.collection[JSONCollection](collectionName))
+  def collection: Future[BSONCollection] = reactiveMongoApi.database.map(_.collection[BSONCollection](collectionName))
 
   implicit def formatter: OFormat[T]
 
@@ -53,7 +58,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
 
   override def find(id: String): Future[Option[T]] = for {
     coll <- collection
-    obj <- coll.find(Json.obj("_id" -> id)).one[T]
+    obj <- coll.find(Json.obj("_id" -> id)).one[JsValue].map(_.map(_.as[T]))
   } yield obj
 
 
@@ -66,7 +71,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
     coll <- collection
     unorderedList <- coll.find(
       Json.obj("_id" -> Json.obj("$in" -> ids))
-    ).cursor[T]().collect[Seq](Int.MaxValue, Cursor.FailOnError[Seq[T]]())
+    ).cursor[JsValue]().collect[Seq](Int.MaxValue,Cursor.FailOnError[Seq[JsValue]]()).map(_.map(_.as[T]))
   } yield ordered match {
     case true =>
       val hashMap: Map[String, T] = unorderedList.map(o => o.identity -> o).toMap
@@ -100,7 +105,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
     coll <- collection
     obj <- coll.find(
       Json.obj("_id" -> id),
-      Json.obj("_id" -> 1)
+      Some(Json.obj("_id" -> 1))
     ).one[JsValue].map(_.isDefined)
   } yield obj
 
@@ -118,13 +123,13 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
 
     for {
       coll <- collection
-      allObjects <- coll.find(Json.obj()).sort(mongoOrder).cursor[T]().collect[Seq](limit,Cursor.FailOnError[Seq[T]]())
+      allObjects <- coll.find(Json.obj()).sort(mongoOrder).cursor[JsValue]().collect[Seq](limit,Cursor.FailOnError[Seq[JsValue]]()).map(_.map(_.as[T]))
     } yield allObjects
   }
 
   def listIds(): Future[Seq[String]] = for {
     coll <- collection
-    ids <- coll.find(Json.obj(), Json.obj("_id" -> true))
+    ids <- coll.find(Json.obj(), Some(Json.obj("_id" -> true)))
       .cursor[JsObject]().collect[Seq](Int.MaxValue,Cursor.FailOnError[Seq[JsObject]]())
       .map(_.flatMap({ j => (j \ "_id").validate[String].asOpt }))
   } yield ids
@@ -138,7 +143,7 @@ trait MongoProvider[T <: Identity] extends Provider[T] {
 
   protected def list(query: JsObject): Future[Seq[T]] = for {
     coll <- collection
-    allObjects <- coll.find(query).cursor[T]().collect[Seq](Int.MaxValue,Cursor.FailOnError[Seq[T]]())
+    allObjects <- coll.find(query).cursor[JsValue]().collect[Seq](Int.MaxValue,Cursor.FailOnError[Seq[JsValue]]()).map(_.map(_.as[T]))
   } yield allObjects
 
   protected def checkExistence(id: String): Future[Boolean] = for {

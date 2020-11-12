@@ -1,8 +1,9 @@
 package ch.wavein.play.mongo.providers
 
 import ch.wavein.play.mongo.model.{Identity, Slug}
-import play.api.libs.json.Json
-import reactivemongo.play.json._
+import play.api.libs.json.{Format, JsValue, Json}
+import reactivemongo.play.json.compat._
+import json2bson.{toDocumentReader, toDocumentWriter}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -28,6 +29,6 @@ trait MongoSlugFinder[T <: Identity with Slug] extends MongoProvider[T] with Slu
 
   override def findBySlug(slug: String): Future[Option[T]] = for {
     coll <- collection
-    page <- coll.find(Json.obj(slugField -> slug.toLowerCase)).one[T]
+    page <- coll.find(Json.obj(slugField -> slug.toLowerCase)).one[JsValue].map(_.map(_.as[T]))
   } yield page
 }
