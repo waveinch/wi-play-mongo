@@ -8,14 +8,13 @@ isSnapshot := false
 
 lazy val root = (project in file("."))
   .settings(
-    bintrayRepository := "maven",
-    bintrayOrganization := Some("waveinch"),
-    publishMavenStyle := true,
     licenses += ("Apache-2.0", url("http://www.opensource.org/licenses/apache2.0.php")),
-    git.useGitDescribe := true
+    developers := List(
+      Developer(id="minettiandrea", name="Andrea Minetti", email="andrea@wavein.ch", url=url("https://wavein.ch")),
+    ),
+    homepage := Some(url("https://github.com/waveinch/wi-play-mongo"))
   ).enablePlugins(
-  PlayScala,
-  GitVersioning
+  PlayScala
 )
 
 scalaVersion := "2.13.3"
